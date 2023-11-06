@@ -19,6 +19,8 @@ services:
       - https_proxy
       - no_proxy
     image: fossology
+    labels:
+      restic-compose-backup.volumes: true
     restart: unless-stopped
     environment:
       - FOSSOLOGY_DB_HOST=db
@@ -29,7 +31,7 @@ services:
     depends_on:
       - db
     volumes:
-      - repository:/srv/fossology/repository/
+      - /opt/fossology/volumes/repository:/srv/fossology/repository/
     healthcheck:
       test: ["CMD-SHELL", "true"]
       interval: 5s
@@ -58,7 +60,7 @@ services:
       - db
       - scheduler
     volumes:
-      - repository:/srv/fossology/repository/
+      - /opt/fossology/volumes/repository:/srv/fossology/repository/
     healthcheck:
       test: ["CMD-SHELL", "curl -sSf localhost/repo/api/v1/health | grep -q '{\"status\":\"OK\",' || exit 1"]
       interval: 5s
@@ -66,6 +68,8 @@ services:
       retries: 5
   db:
     image: postgres:9.6
+    labels:
+      restic-compose-backup.volumes: true
     restart: unless-stopped
     environment:
       - POSTGRES_DB=fossology
@@ -73,14 +77,23 @@ services:
       - POSTGRES_PASSWORD=fossy
       - POSTGRES_INITDB_ARGS='-E SQL_ASCII'
     volumes:
-      - database:/var/lib/postgresql/data
+      - /opt/fossology/volumes/database:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready --dbname $$POSTGRES_DB --username $$POSTGRES_USER"]
       interval: 10s
       timeout: 5s
       retries: 5
       # start-period: 10s
-
+  backup:
+    image: zettaio/restic-compose-backup
+    env_file:
+      - restic-backup.env
+    volumes:
+      # We need to communicate with docker
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # Persistent storage of restic cache (greatly speeds up all restic operations)
+      - /opt/fossology/volumes/resticcache:/cache
+      - /opt/fossology/restic-repo:/repo
 volumes:
   database:
   repository:
