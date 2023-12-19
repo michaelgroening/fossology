@@ -271,7 +271,6 @@ if($isUpdating && empty($sysconfig['Release'])) {
     if(trim($line) != 'i')
     {
      echo "ABORTING!\n";
-     exit(26);
     }
   }
   $sysconfig['Release'] = '2.6';

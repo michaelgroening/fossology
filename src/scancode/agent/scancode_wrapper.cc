@@ -70,10 +70,10 @@ void scanFileWithScancode(const State &state, string fileLocation, string output
 
   string command =
     "PYTHONPATH='/home/" + projectUser + "/pythondeps/' " +
-    "python3 runscanonfiles.py -" + state.getCliOptions() + " " +
+    "python3 runscanonfiles.py " + state.getCliOptions() + " " +
     ((state.getCliOptions().find('l') != string::npos) ? "-m " +
     to_string(MINSCORE): "") + " " + fileLocation + " " + outputFile;
-
+  LOG_NOTICE("Command: %s \n", command.c_str());
   int returnvalue = system(command.c_str());
 
   if (returnvalue != 0) {

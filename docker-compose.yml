@@ -32,11 +32,12 @@ services:
       - db
     volumes:
       - /opt/fossology/volumes/repository:/srv/fossology/repository/
-    healthcheck:
-      test: ["CMD-SHELL", "true"]
-      interval: 5s
-      timeout: 5s
-      retries: 2
+      - /opt/fossology/volumes/import:/src/fossology/import
+#   healthcheck:
+#     test: ["CMD-SHELL", "true"]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 2
   web:
     build:
       context: .
@@ -60,12 +61,14 @@ services:
       - db
       - scheduler
     volumes:
-      - /opt/fossology/volumes/repository:/srv/fossology/repository/
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sSf localhost/repo/api/v1/health | grep -q '{\"status\":\"OK\",' || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - /opt/fossology/volumes/repository:/srv/fossology/repository
+      - /opt/fossology/volumes/import:/src/fossology/import
+#  healthcheck:
+#    test: ["CMD-SHELL", "curl -sSf localhost/repo/api/v1/health | grep -q '{\"status\":\"OK\",' || exit 1"]
+#     test: ["CMD-SHELL", "true"]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
   db:
     image: postgres:9.6
     labels:
@@ -97,3 +100,4 @@ services:
 volumes:
   database:
   repository:
+  import:
